@@ -72,16 +72,22 @@ models:
       - name: svc_teams
         description: >
           Service teams associated with the member, such as Main or HeartKidz.
+        data_tests:
+          - not_null
 
       - name: main_roles
         description: >
           All possible Main team roles associated with the member.
           Missing values are normalised to an empty array.
+        data_tests:
+          - not_null
 
       - name: heart_kidz_roles
         description: > 
           All possible HeartKidz roles associated with the member.
           Missing values are normalised to an empty array.
+        data_tests:
+          - not_null
 
       - name: source_system
         description: System from which the record originated.
