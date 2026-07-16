@@ -12,70 +12,91 @@ models:
       Cleaned and typed member records sourced from the Firestore members collection.
       One row represents one member.
 
+    # config:
+    #   contract:
+    #     enforced: true
+
     columns:
       - name: member_id
+        data_type: string
         description: Unique identifier of the member from the source system.
         data_tests:
           - not_null
           - unique
 
       - name: full_name
+        data_type: string
         description: Full name of the member.
         data_tests:
           - not_null
 
       - name: birthday
+        data_type: date
         description: Member's date of birth.
 
       - name: is_active
+        data_type: boolean
         description: Indicates whether the member is currently active.
         data_tests:
           - not_null
 
       - name: life_stage
+        data_type: string
         description: Current life-stage classification of the member.
 
       - name: remarks
+        data_type: string
         description: General remarks recorded for the member.
 
       - name: blockout_admin_email
+        data_type: string
         description: Email address used for blockout administration.
 
       - name: hkz_onboarding_status
+        data_type: string
         description: Current HeartKidz onboarding status of the member.
         # data_tests:
         #   - not_null
 
       - name: uw_session_status
+        data_type: string
         description: Current UW session status of the member.
         # data_tests:
         #   - not_null
 
       - name: photo_url
+        data_type: string
         description: URL of the member's profile photo.
 
       - name: email
+        data_type: string
         description: Primary email address of the member.
 
       - name: mobile
+        data_type: string
         description: Primary mobile number of the member.
 
       - name: telegram_handle
+        data_type: string
         description: Telegram handle of the member.
 
       - name: telegram_id
+        data_type: string
         description: Telegram user identifier of the member.
 
       - name: telegram_hash
+        data_type: string
         description: Telegram-related hash value of the member.
 
       - name: svc_teams
+        data_type: array<string>
         description: >
           Service teams associated with the member, such as Main or HeartKidz.
         data_tests:
           - not_null
 
       - name: main_roles
+        data_type: array<string>
         description: >
           All possible Main team roles associated with the member.
           Missing values are normalised to an empty array.
@@ -83,6 +104,7 @@ models:
           - not_null
 
       - name: heart_kidz_roles
+        data_type: array<string>
         description: > 
           All possible HeartKidz roles associated with the member.
           Missing values are normalised to an empty array.
@@ -90,20 +112,25 @@ models:
           - not_null
 
       - name: source_system
+        data_type: string
         description: System from which the record originated.
         data_tests:
           - not_null
 
       - name: source_application
+        data_type: string
         description: Application from which the record originated.
 
       - name: source_project
+        data_type: string
         description: Source Google Cloud project identifier.
 
       - name: source_database
+        data_type: string
         description: Source Firestore database identifier.
 
       - name: source_collection
+        data_type: string
         description: Source Firestore collection name.
         data_tests:
           - not_null
@@ -113,17 +140,21 @@ models:
                   - members
 
       - name: source_created_at
+        data_type: timestamp
         description: Timestamp at which the source document was created.
 
       - name: source_updated_at
+        data_type: timestamp
         description: Timestamp at which the source document was last updated.
 
       - name: ingested_at
+        data_type: timestamp
         description: Timestamp at which the record was loaded into BigQuery.
         data_tests:
           - not_null
 
       - name: batch_id
+        data_type: string
         description: Identifier of the ingestion batch that loaded the record.
         data_tests:
           - not_null
@@ -137,39 +168,52 @@ models:
       Cleaned and typed roster records sourced from the Firestore rosters
       collection. One row represents one roster.
 
+    # config:
+    #   contract:
+    #     enforced: true
+
     columns:
       - name: roster_id
+        data_type: string
         description: Unique identifier of the roster from the source system.
         data_tests:
           - not_null
           - unique
 
       - name: chat_title
+        data_type: string
         description: Title used when creating the roster's Telegram group chat.
 
       - name: description_text
+        data_type: string
         description: Main description recorded for the roster.
 
       - name: notes_text
+        data_type: string
         description: Additional notes recorded for the roster.
 
       - name: status
+        data_type: string
         description: Current lifecycle status of the roster.
         data_tests:
           - not_null
 
       - name: svc_team
+        data_type: string
         description: Service team associated with the roster.
         data_tests:
           - not_null
 
       - name: first_svc_date
+        data_type: date
         description: First service date covered by the roster.
 
       - name: telegram_chat_id
+        data_type: string
         description: Telegram chat identifier associated with the roster.
 
       - name: assigned_member_ids
+        data_type: array<string>
         description: >
           Array containing the identifiers of all members assigned within the
           roster. Missing values are normalised to an empty array.
@@ -177,6 +221,7 @@ models:
           - not_null
 
       - name: assignments
+        data_type: json
         description: >
           JSON object mapping service roles to assigned member identifiers.
           Missing values are normalised to an empty JSON object.
@@ -184,18 +229,21 @@ models:
           - not_null
 
       - name: assignment_notes
+        data_type: json
         description: >
           Optional assignment-specific notes retained as JSON from the source.
           Each key is formed from member_id + '_' + role, and each value
           contains the corresponding note text.
 
       - name: shift_exceptions
+        data_type: json
         description: >
           Optional shift-level exceptions to the default whole-roster
           assignments. Each key is formed from member_id + '_' + role, and
           each value contains the dates on which the exception applies.
 
       - name: chat_member_ids
+        data_type: array<string>
         description: >
           Array containing the member identifiers included in the roster's
           Telegram group chat. Missing values are normalised to an empty array.
@@ -203,6 +251,7 @@ models:
           - not_null
 
       - name: svc_datetime
+        data_type: array<json>
         description: >
           Array of JSON objects containing the service dates, start times,
           and end times covered by the roster. Missing values are normalised
@@ -211,6 +260,7 @@ models:
           - not_null
 
       - name: rehearsal_datetime
+        data_type: array<json>
         description: >
           Array of JSON objects containing rehearsal dates, start times,
           and end times. Missing values are normalised to an empty array.
@@ -218,20 +268,25 @@ models:
           - not_null
 
       - name: source_system
+        data_type: string
         description: System from which the source record originated.
         data_tests:
           - not_null
 
       - name: source_application
+        data_type: string
         description: Application from which the source record originated.
 
       - name: source_project
+        data_type: string
         description: Source Google Cloud project identifier.
 
       - name: source_database
+        data_type: string
         description: Source Firestore database identifier.
 
       - name: source_collection
+        data_type: string
         description: Source Firestore collection name.
         data_tests:
           - not_null
@@ -241,17 +296,21 @@ models:
                   - rosters
 
       - name: source_created_at
+        data_type: timestamp
         description: Timestamp at which the source document was created.
 
       - name: source_updated_at
+        data_type: timestamp
         description: Timestamp at which the source document was last updated.
 
       - name: ingested_at
+        data_type: timestamp
         description: Timestamp at which the record was loaded into BigQuery.
         data_tests:
           - not_null
 
       - name: batch_id
+        data_type: string
         description: Identifier of the ingestion batch that loaded the record.
         data_tests:
           - not_null
@@ -265,14 +324,20 @@ models:
       Cleaned and typed member blockout records sourced from the Firestore
       blockouts collection. One row represents one blockout record.
 
+    # config:
+    #   contract:
+    #     enforced: true
+    
     columns:
       - name: blockout_id
+        data_type: string
         description: Unique identifier of the blockout from the source system.
         data_tests:
           - not_null
           - unique
 
       - name: member_id
+        data_type: string
         description: Identifier of the member associated with the blockout.
         data_tests:
           - not_null
@@ -282,14 +347,17 @@ models:
                 field: member_id
 
       - name: member_name
+        data_type: string
         description: Member name stored in the source blockout document.
         data_tests:
           - not_null
 
       - name: reason
+        data_type: string
         description: Reason supplied for the blockout.
 
       - name: type
+        data_type: string
         description: >
           Structure type of the blockout. Simple blockouts use the overall
           date-time range, while Complex blockouts contain individual entries.
@@ -302,36 +370,44 @@ models:
           #         - Complex
 
       - name: range_start_at
+        data_type: datetime
         description: Start date and time of the overall blockout range.
         data_tests:
           - not_null
 
       - name: range_end_at
+        data_type: datetime
         description: End date and time of the overall blockout range.
         data_tests:
           - not_null
 
       - name: entries
+        data_type: array<json>
         description: >
           Individual date-time periods for a Complex blockout. This is normally
           null for a Simple blockout and contains an array of JSON objects for
           a Complex blockout.
 
       - name: source_system
+        data_type: string
         description: System from which the source record originated.
         data_tests:
           - not_null
 
       - name: source_application
+        data_type: string
         description: Application from which the source record originated.
 
       - name: source_project
+        data_type: string
         description: Source Google Cloud project identifier.
 
       - name: source_database
+        data_type: string
         description: Source Firestore database identifier.
 
       - name: source_collection
+        data_type: string
         description: Source Firestore collection name.
         data_tests:
           - not_null
@@ -341,17 +417,21 @@ models:
                   - blockouts
 
       - name: source_created_at
+        data_type: timestamp
         description: Timestamp at which the source document was created.
 
       - name: source_updated_at
+        data_type: timestamp
         description: Timestamp at which the source document was last updated.
 
       - name: ingested_at
+        data_type: timestamp
         description: Timestamp at which the record was loaded into BigQuery.
         data_tests:
           - not_null
 
       - name: batch_id
+        data_type: string
         description: Identifier of the ingestion batch that loaded the record.
         data_tests:
           - not_null
