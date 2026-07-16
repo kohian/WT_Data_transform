@@ -75,7 +75,7 @@ renamed AS (
         COALESCE(
             JSON_VALUE_ARRAY(data, '$.heartKidzRoles'),
             ARRAY<STRING>[]
-        ) AS heart_kidz_roles,
+        ) AS heartkidz_roles,
 
         source_system,
         source_application,

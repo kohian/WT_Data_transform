@@ -103,7 +103,7 @@ models:
         data_tests:
           - not_null
 
-      - name: heart_kidz_roles
+      - name: heartkidz_roles
         data_type: array<string>
         description: > 
           All possible HeartKidz roles associated with the member.
