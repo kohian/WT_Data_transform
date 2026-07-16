@@ -10,7 +10,7 @@ renamed AS (
     SELECT
         document_id AS member_id,
 
-        NULLIF(TRIM(JSON_VALUE(data, '$.name')), '') AS fullname,
+        NULLIF(TRIM(JSON_VALUE(data, '$.name')), '') AS full_name,
         SAFE_CAST(JSON_VALUE(data, '$.birthday') AS DATE) AS birthday,
         SAFE_CAST(JSON_VALUE(data, '$.isActive') AS BOOL) AS is_active,
 
@@ -50,7 +50,7 @@ renamed AS (
         NULLIF(
             TRIM(JSON_VALUE(data, '$.contactInfo.telegram')),
             ''
-        ) AS telegram_username,
+        ) AS telegram_handle,
 
         NULLIF(
             TRIM(JSON_VALUE(data, '$.telegramData.id')),
@@ -70,13 +70,13 @@ renamed AS (
         COALESCE(
             JSON_VALUE_ARRAY(data, '$.roles'),
             ARRAY<STRING>[]
-        ) AS roles,
+        ) AS main_roles,
 
         COALESCE(
             JSON_VALUE_ARRAY(data, '$.heartKidzRoles'),
             ARRAY<STRING>[]
         ) AS heart_kidz_roles,
-        
+
         source_system,
         source_application,
         source_project,

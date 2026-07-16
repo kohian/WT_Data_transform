@@ -50,17 +50,17 @@ renamed AS (
             ARRAY<STRING>[]
         ) AS assigned_member_ids,
 
-        COALESCE( --coalesce so that no null just empty asignment
+        COALESCE(
             JSON_QUERY(data, '$.assignments'),
             JSON '{}'
         ) AS assignments,
 
-        JSON_QUERY( --allow null here.. means no notes
+        JSON_QUERY( 
             data,
             '$.assignmentNotes'
         ) AS assignment_notes,
 
-        JSON_QUERY( --allow null here.. means no exceptions
+        JSON_QUERY( 
             data,
             '$.shiftExclusions'
         ) AS shift_exceptions,
