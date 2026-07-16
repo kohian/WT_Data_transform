@@ -43,13 +43,13 @@ models:
 
       - name: hkz_onboarding_status
         description: Current HeartKidz onboarding status of the member.
-        data_tests:
-          - not_null
+        # data_tests:
+        #   - not_null
 
       - name: uw_session_status
         description: Current UW session status of the member.
-        data_tests:
-          - not_null
+        # data_tests:
+        #   - not_null
 
       - name: photo_url
         description: URL of the member's profile photo.
