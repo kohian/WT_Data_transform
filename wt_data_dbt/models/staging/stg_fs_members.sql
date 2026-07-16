@@ -65,7 +65,7 @@ renamed AS (
         COALESCE(
             JSON_VALUE_ARRAY(data, '$.teams'),
             ARRAY<STRING>[]
-        ) AS teams,
+        ) AS svc_teams,
 
         COALESCE(
             JSON_VALUE_ARRAY(data, '$.roles'),
