@@ -1,0 +1,351 @@
+version: 2
+
+
+models:
+
+  # ============================================================
+  # MEMBERS
+  # ============================================================
+  - name: stg_fs_members
+    description: >
+      Staging (silver) view materialisation.
+      Cleaned and typed member records sourced from the Firestore members collection.
+      One row represents one member.
+
+    columns:
+      - name: member_id
+        description: Unique identifier of the member from the source system.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: full_name
+        description: Full name of the member.
+        data_tests:
+          - not_null
+
+      - name: birthday
+        description: Member's date of birth.
+
+      - name: is_active
+        description: Indicates whether the member is currently active.
+        data_tests:
+          - not_null
+
+      - name: life_stage
+        description: Current life-stage classification of the member.
+
+      - name: remarks
+        description: General remarks recorded for the member.
+
+      - name: blockout_admin_email
+        description: Email address used for blockout administration.
+
+      - name: hkz_onboarding_status
+        description: Current HeartKidz onboarding status of the member.
+        data_tests:
+          - not_null
+
+      - name: uw_session_status
+        description: Current UW session status of the member.
+        data_tests:
+          - not_null
+
+      - name: photo_url
+        description: URL of the member's profile photo.
+
+      - name: email
+        description: Primary email address of the member.
+
+      - name: mobile
+        description: Primary mobile number of the member.
+
+      - name: telegram_handle
+        description: Telegram handle of the member.
+
+      - name: telegram_id
+        description: Telegram user identifier of the member.
+
+      - name: telegram_hash
+        description: Telegram-related hash value of the member.
+
+      - name: svc_teams
+        description: >
+          Service teams associated with the member, such as Main or HeartKidz.
+
+      - name: main_roles
+        description: >
+          All possible Main team roles associated with the member.
+          Missing values are normalised to an empty array.
+
+      - name: heart_kidz_roles
+        description: > 
+          All possible HeartKidz roles associated with the member.
+          Missing values are normalised to an empty array.
+
+      - name: source_system
+        description: System from which the record originated.
+        data_tests:
+          - not_null
+
+      - name: source_application
+        description: Application from which the record originated.
+
+      - name: source_project
+        description: Source Google Cloud project identifier.
+
+      - name: source_database
+        description: Source Firestore database identifier.
+
+      - name: source_collection
+        description: Source Firestore collection name.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - members
+
+      - name: source_created_at
+        description: Timestamp at which the source document was created.
+
+      - name: source_updated_at
+        description: Timestamp at which the source document was last updated.
+
+      - name: ingested_at
+        description: Timestamp at which the record was loaded into BigQuery.
+        data_tests:
+          - not_null
+
+      - name: batch_id
+        description: Identifier of the ingestion batch that loaded the record.
+        data_tests:
+          - not_null
+
+  # ============================================================
+  # ROSTERS
+  # ============================================================
+  - name: stg_fs_rosters
+    description: >
+      Staging (silver) view materialisation.
+      Cleaned and typed roster records sourced from the Firestore rosters
+      collection. One row represents one roster.
+
+    columns:
+      - name: roster_id
+        description: Unique identifier of the roster from the source system.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: chat_title
+        description: Title used when creating the roster's Telegram group chat.
+
+      - name: description_text
+        description: Main description recorded for the roster.
+
+      - name: notes_text
+        description: Additional notes recorded for the roster.
+
+      - name: status
+        description: Current lifecycle status of the roster.
+        data_tests:
+          - not_null
+
+      - name: svc_team
+        description: Service team associated with the roster.
+        data_tests:
+          - not_null
+
+      - name: first_svc_date
+        description: First service date covered by the roster.
+
+      - name: telegram_chat_id
+        description: Telegram chat identifier associated with the roster.
+
+      - name: assigned_member_ids
+        description: >
+          Array containing the identifiers of all members assigned within the
+          roster. Missing values are normalised to an empty array.
+        data_tests:
+          - not_null
+
+      - name: assignments
+        description: >
+          JSON object mapping service roles to assigned member identifiers.
+          Missing values are normalised to an empty JSON object.
+        data_tests:
+          - not_null
+
+      - name: assignment_notes
+        description: >
+          Optional assignment-specific notes retained as JSON from the source.
+          Each key is formed from member_id + '_' + role, and each value
+          contains the corresponding note text.
+
+      - name: shift_exceptions
+        description: >
+          Optional shift-level exceptions to the default whole-roster
+          assignments. Each key is formed from member_id + '_' + role, and
+          each value contains the dates on which the exception applies.
+
+      - name: chat_member_ids
+        description: >
+          Array containing the member identifiers included in the roster's
+          Telegram group chat. Missing values are normalised to an empty array.
+        data_tests:
+          - not_null
+
+      - name: svc_datetime
+        description: >
+          Array of JSON objects containing the service dates, start times,
+          and end times covered by the roster. Missing values are normalised
+          to an empty array.
+        data_tests:
+          - not_null
+
+      - name: rehearsal_datetime
+        description: >
+          Array of JSON objects containing rehearsal dates, start times,
+          and end times. Missing values are normalised to an empty array.
+        data_tests:
+          - not_null
+
+      - name: source_system
+        description: System from which the source record originated.
+        data_tests:
+          - not_null
+
+      - name: source_application
+        description: Application from which the source record originated.
+
+      - name: source_project
+        description: Source Google Cloud project identifier.
+
+      - name: source_database
+        description: Source Firestore database identifier.
+
+      - name: source_collection
+        description: Source Firestore collection name.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - rosters
+
+      - name: source_created_at
+        description: Timestamp at which the source document was created.
+
+      - name: source_updated_at
+        description: Timestamp at which the source document was last updated.
+
+      - name: ingested_at
+        description: Timestamp at which the record was loaded into BigQuery.
+        data_tests:
+          - not_null
+
+      - name: batch_id
+        description: Identifier of the ingestion batch that loaded the record.
+        data_tests:
+          - not_null
+
+  # ============================================================
+  # BLOCKOUTS
+  # ============================================================
+  - name: stg_fs_blockouts
+    description: >
+      Staging (silver) view materialisation.
+      Cleaned and typed member blockout records sourced from the Firestore
+      blockouts collection. One row represents one blockout record.
+
+    columns:
+      - name: blockout_id
+        description: Unique identifier of the blockout from the source system.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: member_id
+        description: Identifier of the member associated with the blockout.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_fs_members')
+                field: member_id
+
+      - name: member_name
+        description: Member name stored in the source blockout document.
+        data_tests:
+          - not_null
+
+      - name: reason
+        description: Reason supplied for the blockout.
+
+      - name: type
+        description: >
+          Structure type of the blockout. Simple blockouts use the overall
+          date-time range, while Complex blockouts contain individual entries.
+        data_tests:
+          - not_null
+          # - accepted_values:
+          #     arguments:
+          #       values:
+          #         - Simple
+          #         - Complex
+
+      - name: range_start_at
+        description: Start date and time of the overall blockout range.
+        data_tests:
+          - not_null
+
+      - name: range_end_at
+        description: End date and time of the overall blockout range.
+        data_tests:
+          - not_null
+
+      - name: entries
+        description: >
+          Individual date-time periods for a Complex blockout. This is normally
+          null for a Simple blockout and contains an array of JSON objects for
+          a Complex blockout.
+
+      - name: source_system
+        description: System from which the source record originated.
+        data_tests:
+          - not_null
+
+      - name: source_application
+        description: Application from which the source record originated.
+
+      - name: source_project
+        description: Source Google Cloud project identifier.
+
+      - name: source_database
+        description: Source Firestore database identifier.
+
+      - name: source_collection
+        description: Source Firestore collection name.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - blockouts
+
+      - name: source_created_at
+        description: Timestamp at which the source document was created.
+
+      - name: source_updated_at
+        description: Timestamp at which the source document was last updated.
+
+      - name: ingested_at
+        description: Timestamp at which the record was loaded into BigQuery.
+        data_tests:
+          - not_null
+
+      - name: batch_id
+        description: Identifier of the ingestion batch that loaded the record.
+        data_tests:
+          - not_null
