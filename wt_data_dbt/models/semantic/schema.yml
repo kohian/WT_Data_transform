@@ -1,0 +1,658 @@
+version: 2
+
+models:
+  - name: dim_members
+    description: One row per member, containing profile, contact, lifecycle, team, and role attributes.
+    columns:
+      - name: member_id
+        data_type: STRING
+        description: Unique member identifier.
+        data_tests: [not_null, unique]
+      - name: full_name
+        data_type: STRING
+        description: Member's full name.
+        data_tests: [not_null]
+      - name: birthday
+        data_type: DATE
+        description: Member's date of birth.
+      - name: is_active
+        data_type: BOOL
+        description: Whether the member is currently active.
+        data_tests: [not_null]
+      - name: life_stage
+        data_type: STRING
+        description: Member's current life-stage category.
+      - name: remarks
+        data_type: STRING
+        description: General remarks about the member.
+      - name: blockout_admin_email
+        data_type: STRING
+        description: Email of the person who administers the member's blockouts.
+      - name: hkz_onboarding_status
+        data_type: STRING
+        description: HeartKidz onboarding status.
+      - name: uw_session_status
+        data_type: STRING
+        description: UW session status.
+      - name: photo_url
+        data_type: STRING
+        description: Profile photo URL.
+      - name: email
+        data_type: STRING
+        description: Primary email address.
+      - name: mobile
+        data_type: STRING
+        description: Primary mobile number.
+      - name: telegram_handle
+        data_type: STRING
+        description: Telegram username or handle.
+      - name: telegram_id
+        data_type: STRING
+        description: Telegram user identifier.
+      - name: service_teams
+        data_type: ARRAY<STRING>
+        description: Array of service teams associated with the member.
+        data_tests: [not_null]
+      - name: main_roles
+        data_type: ARRAY<STRING>
+        description: Array of Main-team roles associated with the member.
+        data_tests: [not_null]
+      - name: heartkidz_roles
+        data_type: ARRAY<STRING>
+        description: Array of HeartKidz roles associated with the member.
+        data_tests: [not_null]
+      - name: is_main_team
+        data_type: BOOL
+        description: Whether the member belongs to the Main service team.
+        data_tests: [not_null]
+      - name: is_heartkidz_team
+        data_type: BOOL
+        description: Whether the member belongs to the HeartKidz service team.
+        data_tests: [not_null]
+      - name: source_created_at
+        data_type: TIMESTAMP
+        description: Source-system creation timestamp.
+      - name: source_updated_at
+        data_type: TIMESTAMP
+        description: Source-system update timestamp.
+      - name: ingested_at
+        data_type: TIMESTAMP
+        description: Warehouse ingestion timestamp.
+        data_tests: [not_null]
+      - name: batch_id
+        data_type: STRING
+        description: Ingestion or patch batch identifier.
+        data_tests: [not_null]
+
+  - name: dim_rosters
+    description: One row per roster with descriptive attributes and roster-level service, rehearsal and assignment summaries.
+
+    columns:
+      - name: roster_id
+        description: Unique roster identifier.
+        data_type: STRING
+        data_tests:
+          - not_null
+          - unique
+
+      - name: roster_title
+        description: Standardised human-readable service title built from the service team and service dates.
+        data_type: STRING
+
+      - name: service_name
+        description: Service name derived from the source chat title after removing dates, numbers, known team terms, weekday terms, WT and punctuation.
+        data_type: STRING
+
+      - name: roster_details
+        description: Combined roster description and notes, separated by a newline when both values are present.
+        data_type: STRING
+
+      - name: status
+        description: Current roster status.
+        data_type: STRING
+
+      - name: service_team
+        description: Service team associated with the roster.
+        data_type: STRING
+
+      - name: first_service_date
+        description: First service date recorded for the roster.
+        data_type: DATE
+
+      - name: service_count
+        description: Number of service occurrences in the roster.
+        data_type: INT64
+        data_tests:
+          - not_null
+
+      - name: first_service_start_at
+        description: Earliest service start datetime in the roster.
+        data_type: DATETIME
+
+      - name: last_service_end_at
+        description: Latest service end datetime in the roster.
+        data_type: DATETIME
+
+      - name: rehearsal_count
+        description: Number of rehearsal occurrences in the roster.
+        data_type: INT64
+        data_tests:
+          - not_null
+
+      - name: first_rehearsal_start_at
+        description: Earliest rehearsal start datetime in the roster.
+        data_type: DATETIME
+
+      - name: last_rehearsal_end_at
+        description: Latest rehearsal end datetime in the roster.
+        data_type: DATETIME
+
+      - name: assigned_member_count
+        description: Number of distinct assigned members in the roster.
+        data_type: INT64
+        data_tests:
+          - not_null
+
+      - name: assigned_role_count
+        description: Number of distinct assigned roles in the roster.
+        data_type: INT64
+        data_tests:
+          - not_null
+
+      - name: assignment_count
+        description: Number of roster-role-member assignment rows in the roster.
+        data_type: INT64
+        data_tests:
+          - not_null
+
+      - name: source_created_at
+        description: Source record creation timestamp.
+        data_type: TIMESTAMP
+
+      - name: source_updated_at
+        description: Source record update timestamp.
+        data_type: TIMESTAMP
+
+      - name: ingested_at
+        description: Timestamp when the source record was ingested.
+        data_type: TIMESTAMP
+
+      - name: batch_id
+        description: Identifier for the ingestion batch.
+        data_type: STRING
+
+  - name: dim_dates
+    description: Calendar date dimension generated in SQL for time-based analytics.
+    columns:
+      - name: date_day
+        data_type: DATE
+        description: Calendar date and primary key.
+        data_tests: [not_null, unique]
+      - name: year_number
+        data_type: INT64
+        description: Calendar year number.
+        data_tests: [not_null]
+      - name: quarter_number
+        data_type: INT64
+        description: Calendar quarter number from 1 to 4.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4]
+                quote: false
+      - name: month_number
+        data_type: INT64
+        description: Calendar month number from 1 to 12.
+        data_tests: [not_null]
+      - name: month_name
+        data_type: STRING
+        description: Full English month name.
+        data_tests: [not_null]
+      - name: year_month
+        data_type: STRING
+        description: Year and month in YYYY-MM format.
+        data_tests: [not_null]
+      - name: iso_week_number
+        data_type: INT64
+        description: ISO week number.
+        data_tests: [not_null]
+      - name: iso_year_number
+        data_type: INT64
+        description: ISO week-numbering year.
+        data_tests: [not_null]
+      - name: week_start_date
+        data_type: DATE
+        description: Monday starting the calendar week.
+        data_tests: [not_null]
+      - name: month_start_date
+        data_type: DATE
+        description: First day of the calendar month.
+        data_tests: [not_null]
+      - name: quarter_start_date
+        data_type: DATE
+        description: First day of the calendar quarter.
+        data_tests: [not_null]
+      - name: year_start_date
+        data_type: DATE
+        description: First day of the calendar year.
+        data_tests: [not_null]
+      - name: day_name
+        data_type: STRING
+        description: Full English weekday name.
+        data_tests: [not_null]
+      - name: day_of_week_number
+        data_type: INT64
+        description: BigQuery weekday number where Sunday is 1 and Saturday is 7.
+        data_tests: [not_null]
+      - name: day_of_month
+        data_type: INT64
+        description: Day number within the month.
+        data_tests: [not_null]
+      - name: day_of_year
+        data_type: INT64
+        description: Day number within the year.
+        data_tests: [not_null]
+      - name: is_weekend
+        data_type: BOOL
+        description: Whether the date falls on Saturday or Sunday.
+        data_tests: [not_null]
+
+  - name: fct_roster_services
+    description: One row per service occurrence within a roster.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [roster_id, service_offset]
+    columns:
+      - name: service_occurrence_id
+        data_type: STRING
+        description: Unique identifier formed from roster_id and service_offset.
+        data_tests: [not_null, unique]
+      - name: roster_id
+        data_type: STRING
+        description: Parent roster identifier.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('dim_rosters')", field: roster_id}
+      - name: service_offset
+        data_type: INT64
+        description: Position of the service occurrence in the source array.
+        data_tests: [not_null]
+      - name: service_date
+        data_type: DATE
+        description: Date of the service occurrence.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('dim_dates')", field: date_day}
+      - name: service_start_time
+        data_type: TIME
+        description: Service start time.
+      - name: service_end_time
+        data_type: TIME
+        description: Service end time.
+      - name: service_start_at
+        data_type: DATETIME
+        description: Combined service date and start time.
+        data_tests: [not_null]
+      - name: service_end_at
+        data_type: DATETIME
+        description: Combined service date and end time.
+        data_tests: [not_null]
+      - name: service_duration_minutes
+        data_type: INT64
+        description: Service duration in minutes.
+      - name: service_team
+        data_type: STRING
+        description: Service team associated with the roster.
+      - name: roster_status
+        data_type: STRING
+        description: Current roster status.
+      - name: roster_title
+        data_type: STRING
+        description: Standardised human-readable title for the roster.
+      - name: service_name
+        data_type: STRING
+        description: Cleaned service name derived from the source chat title.
+      - name: roster_details
+        data_type: STRING
+        description: Combined roster description and notes, separated by a newline when both are present.
+      - name: dbt_updated_at
+        data_type: TIMESTAMP
+        description: Timestamp when dbt built the table.
+        data_tests: [not_null]
+
+  - name: fct_roster_rehearsals
+    description: One row per rehearsal occurrence within a roster.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [roster_id, rehearsal_offset]
+    columns:
+      - name: rehearsal_occurrence_id
+        data_type: STRING
+        description: Unique identifier formed from roster_id and rehearsal_offset.
+        data_tests: [not_null, unique]
+      - name: roster_id
+        data_type: STRING
+        description: Parent roster identifier.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('dim_rosters')", field: roster_id}
+      - name: rehearsal_offset
+        data_type: INT64
+        description: Position of the rehearsal occurrence in the source array.
+        data_tests: [not_null]
+      - name: rehearsal_date
+        data_type: DATE
+        description: Date of the rehearsal.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('dim_dates')", field: date_day}
+      - name: rehearsal_start_time
+        data_type: TIME
+        description: Rehearsal start time.
+      - name: rehearsal_end_time
+        data_type: TIME
+        description: Rehearsal end time.
+      - name: rehearsal_start_at
+        data_type: DATETIME
+        description: Combined rehearsal date and start time.
+        data_tests: [not_null]
+      - name: rehearsal_end_at
+        data_type: DATETIME
+        description: Combined rehearsal date and end time.
+        data_tests: [not_null]
+      - name: rehearsal_duration_minutes
+        data_type: INT64
+        description: Rehearsal duration in minutes.
+      - name: service_team
+        data_type: STRING
+        description: Service team associated with the roster.
+      - name: roster_status
+        data_type: STRING
+        description: Current roster status.
+      - name: roster_title
+        data_type: STRING
+        description: Standardised human-readable title for the roster.
+      - name: service_name
+        data_type: STRING
+        description: Cleaned service name derived from the source chat title.
+      - name: roster_details
+        data_type: STRING
+        description: Combined roster description and notes, separated by a newline when both are present.
+      - name: dbt_updated_at
+        data_type: TIMESTAMP
+        description: Timestamp when dbt built the table.
+        data_tests: [not_null]
+
+  - name: fct_roster_assignments
+    description: One row per roster, role, and assigned member, including notes and shift-exception dates.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [roster_id, role, member_id]
+    columns:
+      - name: roster_id
+        data_type: STRING
+        description: Parent roster identifier.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('dim_rosters')", field: roster_id}
+      - name: roster_title
+        data_type: STRING
+        description: Standardised human-readable title for the roster.
+      - name: service_name
+        data_type: STRING
+        description: Cleaned service name derived from the source chat title.
+      - name: roster_details
+        data_type: STRING
+        description: Combined roster description and notes, separated by a newline when both are present.
+      - name: service_team
+        data_type: STRING
+        description: Service team associated with the roster.
+      - name: roster_status
+        data_type: STRING
+        description: Current roster status.
+      - name: first_service_date
+        data_type: DATE
+        description: First service date associated with the roster.
+      - name: role
+        data_type: STRING
+        description: Role assigned to the member.
+        data_tests: [not_null]
+      - name: member_id
+        data_type: STRING
+        description: Assigned member identifier.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('dim_members')", field: member_id}
+      - name: member_name
+        data_type: STRING
+        description: Assigned member's name at build time.
+      - name: member_is_active
+        data_type: BOOL
+        description: Whether the assigned member is active at build time.
+      - name: assignment_note
+        data_type: STRING
+        description: Optional note for this roster-member-role assignment.
+      - name: shift_exception_count
+        data_type: INT64
+        description: Number of distinct shift-exception dates for the assignment.
+        data_tests: [not_null]
+      - name: shift_exception_dates
+        data_type: ARRAY<DATE>
+        description: Ordered array of distinct shift-exception dates.
+        data_tests: [not_null]
+      - name: dbt_updated_at
+        data_type: TIMESTAMP
+        description: Timestamp when dbt built the table.
+        data_tests: [not_null]
+
+  - name: fct_member_service_assignments
+    description: One row per service occurrence, role, and member. Represents rostering, not confirmed attendance.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [service_occurrence_id, role, member_id]
+    columns:
+      - name: member_service_assignment_id
+        data_type: STRING
+        description: Unique service-occurrence, role, and member assignment identifier.
+        data_tests: [not_null, unique]
+      - name: service_occurrence_id
+        data_type: STRING
+        description: Service occurrence identifier.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('fct_roster_services')", field: service_occurrence_id}
+      - name: roster_id
+        data_type: STRING
+        description: Parent roster identifier.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('dim_rosters')", field: roster_id}
+      - name: service_offset
+        data_type: INT64
+        description: Position of the service occurrence in the roster.
+        data_tests: [not_null]
+      - name: service_date
+        data_type: DATE
+        description: Date on which the member was rostered.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('dim_dates')", field: date_day}
+      - name: service_start_at
+        data_type: DATETIME
+        description: Scheduled service start datetime.
+        data_tests: [not_null]
+      - name: service_end_at
+        data_type: DATETIME
+        description: Scheduled service end datetime.
+        data_tests: [not_null]
+      - name: roster_title
+        data_type: STRING
+        description: Standardised human-readable title for the roster.
+      - name: service_name
+        data_type: STRING
+        description: Cleaned service name derived from the source chat title.
+      - name: roster_details
+        data_type: STRING
+        description: Combined roster description and notes, separated by a newline when both are present.
+      - name: service_team
+        data_type: STRING
+        description: Service team associated with the roster.
+      - name: roster_status
+        data_type: STRING
+        description: Current roster status.
+      - name: role
+        data_type: STRING
+        description: Role assigned to the member.
+        data_tests: [not_null]
+      - name: member_id
+        data_type: STRING
+        description: Assigned member identifier.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('dim_members')", field: member_id}
+      - name: member_name
+        data_type: STRING
+        description: Full name of the assigned member at build time.
+      - name: assignment_note
+        data_type: STRING
+        description: Optional assignment note.
+      - name: is_rostered
+        data_type: BOOL
+        description: Always true for rows in this fact; explicitly marks that the member was rostered.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: [true]}
+              quote: false
+      - name: has_shift_exception
+        data_type: BOOL
+        description: Whether the member has a shift exception for this exact service date.
+        data_tests: [not_null]
+      - name: is_expected_to_serve
+        data_type: BOOL
+        description: Whether the member was rostered without a shift exception on this service date.
+        data_tests: [not_null]
+      - name: dbt_updated_at
+        data_type: TIMESTAMP
+        description: Timestamp when dbt built the table.
+        data_tests: [not_null]
+
+  - name: fct_member_blockouts
+    description: One row per effective member blockout period, including expanded entries from complex blockouts.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [blockout_id, entry_offset, member_id, period_start_at, period_end_at]
+    columns:
+      - name: blockout_id
+        data_type: STRING
+        description: Source blockout identifier.
+        data_tests: [not_null]
+      - name: entry_id
+        data_type: STRING
+        description: Nested entry identifier for complex blockouts.
+      - name: entry_offset
+        data_type: INT64
+        description: Nested entry position for complex blockouts.
+      - name: member_id
+        data_type: STRING
+        description: Member to whom the blockout applies.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('dim_members')", field: member_id}
+      - name: member_name
+        data_type: STRING
+        description: Member's name at build time.
+      - name: member_is_active
+        data_type: BOOL
+        description: Whether the member is active at build time.
+      - name: blockout_type
+        data_type: STRING
+        description: Simple or complex source blockout type.
+      - name: reason
+        data_type: STRING
+        description: Reason recorded for the blockout.
+      - name: period_start_at
+        data_type: DATETIME
+        description: Blockout start datetime.
+        data_tests: [not_null]
+      - name: period_end_at
+        data_type: DATETIME
+        description: Blockout end datetime.
+        data_tests: [not_null]
+      - name: blockout_start_date
+        data_type: DATE
+        description: Calendar date on which the blockout begins.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('dim_dates')", field: date_day}
+      - name: blockout_end_date
+        data_type: DATE
+        description: Calendar date on which the blockout ends.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('dim_dates')", field: date_day}
+      - name: is_all_day
+        data_type: BOOL
+        description: Whether the blockout covers the full day.
+        # data_tests: [not_null]
+      - name: dbt_updated_at
+        data_type: TIMESTAMP
+        description: Timestamp when dbt built the table.
+        data_tests: [not_null]
+
+  - name: bridge_member_main_roles
+    description: One row per member and eligible Main-team role.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [member_id, main_role]
+    columns:
+      - name: member_id
+        data_type: STRING
+        description: Member identifier.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('dim_members')", field: member_id}
+      - name: main_role
+        data_type: STRING
+        description: Eligible Main-team role.
+        data_tests: [not_null]
+
+  - name: bridge_member_heartkidz_roles
+    description: One row per member and eligible HeartKidz role.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [member_id, heartkidz_role]
+    columns:
+      - name: member_id
+        data_type: STRING
+        description: Member identifier.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('dim_members')", field: member_id}
+      - name: heartkidz_role
+        data_type: STRING
+        description: Eligible HeartKidz role.
+        data_tests: [not_null]

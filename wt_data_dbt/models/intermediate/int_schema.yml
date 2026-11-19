@@ -1,0 +1,568 @@
+version: 2
+
+models:
+
+  # ============================================================
+  # MEMBER INTERMEDIATE MODELS
+  # ============================================================
+
+  - name: int_member_svc_team_flags
+    description: >
+      Intermediate view derived from stg_fs_members_patched. Converts each member's
+      service-team array into boolean membership flags. One row represents one
+      member.
+    columns:
+      - name: member_id
+        data_type: string
+        description: Unique identifier of the member from the source system.
+        data_tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('stg_fs_members_patched')
+                field: member_id
+
+      - name: is_main_team
+        data_type: boolean
+        description: Indicates whether the member belongs to the Main service team.
+        data_tests:
+          - not_null
+
+      - name: is_heartkidz_team
+        data_type: boolean
+        description: Indicates whether the member belongs to the HeartKidz service team.
+        data_tests:
+          - not_null
+
+  - name: int_member_main_roles
+    description: >
+      Intermediate view that expands the Main-team roles array from
+      stg_fs_members_patched. One row represents one Main-team role held by one member.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - member_id
+              - main_role
+    columns:
+      - name: member_id
+        data_type: string
+        description: Identifier of the member associated with the Main-team role.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_fs_members_patched')
+                field: member_id
+
+      - name: main_role
+        data_type: string
+        description: Main-team role associated with the member.
+        data_tests:
+          - not_null
+
+  - name: int_member_heartkidz_roles
+    description: >
+      Intermediate view that expands the HeartKidz roles array from
+      stg_fs_members_patched. One row represents one HeartKidz role held by one member.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - member_id
+              - heartkidz_role
+    columns:
+      - name: member_id
+        data_type: string
+        description: Identifier of the member associated with the HeartKidz role.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_fs_members_patched')
+                field: member_id
+
+      - name: heartkidz_role
+        data_type: string
+        description: HeartKidz role associated with the member.
+        data_tests:
+          - not_null
+
+  # ============================================================
+  # BLOCKOUT INTERMEDIATE MODELS
+  # ============================================================
+  - name: int_complex_blockouts_flattened
+    description: >
+      Intermediate view that expands the entries array of Complex blockouts
+      from stg_fs_blockouts. One row represents one individual entry within one
+      Complex blockout.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - blockout_id
+              - entry_offset
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - blockout_id
+              - entry_id
+
+    columns:
+      - name: blockout_id
+        data_type: string
+        description: Identifier of the parent Complex blockout.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_fs_blockouts')
+                field: blockout_id
+
+      - name: entry_offset
+        data_type: int64
+        description: Zero-based position of the entry within the source entries array.
+        data_tests:
+          - not_null
+
+      - name: entry_id
+        data_type: string
+        description: Identifier of the individual Complex blockout entry from the source JSON.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: entry_start_at
+        data_type: datetime
+        description: Start date and time of the individual Complex blockout entry.
+        data_tests:
+          - not_null
+
+      - name: entry_end_at
+        data_type: datetime
+        description: End date and time of the individual Complex blockout entry.
+        data_tests:
+          - not_null
+
+      - name: is_all_day
+        data_type: boolean
+        description: Indicates whether the individual blockout entry applies for the full day.
+        data_tests:
+          - not_null
+
+  - name: int_blockouts_consolidated
+    description: >
+      Intermediate view that standardises Simple and Complex blockouts into a
+      common period-level structure. One row represents one effective blockout
+      period for one member. A Simple blockout contributes one period, while a
+      Complex blockout contributes one period per entry.
+    columns:
+      - name: blockout_id
+        data_type: string
+        description: Identifier of the source blockout record.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_fs_blockouts')
+                field: blockout_id
+
+      - name: entry_id
+        data_type: string
+        description: >
+          Identifier of the individual Complex blockout entry. Null for Simple
+          blockouts because no nested entry exists.
+
+      - name: entry_offset
+        data_type: int64
+        description: >
+          Zero-based position of the Complex blockout entry in the source array.
+          Null for Simple blockouts.
+
+      - name: member_id
+        data_type: string
+        description: Identifier of the member associated with the blockout period.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_fs_members_patched')
+                field: member_id
+
+      - name: range_start_at
+        data_type: datetime
+        description: Start date and time of the overall source blockout range.
+        data_tests:
+          - not_null
+
+      - name: range_end_at
+        data_type: datetime
+        description: End date and time of the overall source blockout range.
+        data_tests:
+          - not_null
+
+      - name: period_start_at
+        data_type: datetime
+        description: >
+          Start date and time of the effective blockout period. This is the
+          overall range start for Simple blockouts and the entry start for
+          Complex blockouts.
+        data_tests:
+          - not_null
+
+      - name: period_end_at
+        data_type: datetime
+        description: >
+          End date and time of the effective blockout period. This is the
+          overall range end for Simple blockouts and the entry end for Complex
+          blockouts.
+        data_tests:
+          - not_null
+
+      - name: reason
+        data_type: string
+        description: Reason supplied for the source blockout.
+
+      - name: blockout_type
+        data_type: string
+        description: Structure type of the source blockout.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - Simple
+                  - Complex
+
+      - name: is_all_day
+        data_type: boolean
+        description: >
+          Indicates whether a Complex blockout entry applies for the full day.
+          Null for Simple blockouts where this attribute is not applicable.
+
+  # ============================================================
+  # ROSTER MEMBER INTERMEDIATE MODELS
+  # ============================================================
+  - name: int_roster_assigned_members
+    description: >
+      Intermediate view that expands the assigned-member array from
+      stg_fs_rosters. One row represents one member listed as assigned to one
+      roster, regardless of role.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - roster_id
+              - member_id
+    columns:
+      - name: roster_id
+        data_type: string
+        description: Identifier of the roster to which the member is assigned.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_fs_rosters')
+                field: roster_id
+
+      - name: member_id
+        data_type: string
+        description: Identifier of the member listed as assigned to the roster.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_fs_members_patched')
+                field: member_id
+
+  - name: int_roster_assigned_members_roles
+    description: >
+      Intermediate view that expands the roster assignments JSON object into
+      relational rows. One row represents one member assigned to one role in
+      one roster.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - roster_id
+              - member_id
+              - role
+    columns:
+      - name: roster_id
+        data_type: string
+        description: Identifier of the roster containing the role assignment.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_fs_rosters')
+                field: roster_id
+
+      - name: member_id
+        data_type: string
+        description: Identifier of the member assigned to the role.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_fs_members_patched')
+                field: member_id
+
+      - name: role
+        data_type: string
+        description: Service role assigned to the member within the roster.
+        data_tests:
+          - not_null
+
+  - name: int_roster_assignment_notes
+    description: >
+      Intermediate view that expands the assignment-notes JSON object from
+      stg_fs_rosters. One row represents one note attached to a member-role
+      assignment in one roster.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - roster_id
+              - assignment_key
+    columns:
+      - name: roster_id
+        data_type: string
+        description: Identifier of the roster containing the assignment note.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_fs_rosters')
+                field: roster_id
+
+      - name: assignment_key
+        data_type: string
+        description: >
+          Exact source JSON key formed from member_id, an underscore, and role.
+        data_tests:
+          - not_null
+
+      - name: member_id
+        data_type: string
+        description: Member identifier parsed from the assignment key.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_fs_members_patched')
+                field: member_id
+
+      - name: role
+        data_type: string
+        description: Role parsed from the assignment key.
+        data_tests:
+          - not_null
+
+      - name: assignment_note
+        data_type: string
+        description: Note text associated with the member-role assignment.
+
+  - name: int_roster_shift_exceptions
+    description: >
+      Intermediate view that expands the shift-exceptions JSON object and its
+      date arrays from stg_fs_rosters. One row represents one exception date
+      for one member-role assignment in one roster.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - roster_id
+              - assignment_key
+              - exception_date
+    columns:
+      - name: roster_id
+        data_type: string
+        description: Identifier of the roster containing the shift exception.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_fs_rosters')
+                field: roster_id
+
+      - name: assignment_key
+        data_type: string
+        description: >
+          Exact source JSON key formed from member_id, an underscore, and role.
+        data_tests:
+          - not_null
+
+      - name: member_id
+        data_type: string
+        description: Member identifier parsed from the assignment key.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_fs_members_patched')
+                field: member_id
+
+      - name: role
+        data_type: string
+        description: Role parsed from the assignment key.
+        data_tests:
+          - not_null
+
+      - name: exception_date
+        data_type: date
+        description: Date on which the member-role assignment exception applies.
+        data_tests:
+          - not_null
+
+  - name: int_roster_chat_members
+    description: >
+      Intermediate view that expands the roster Telegram chat-member array from
+      stg_fs_rosters. One row represents one member included in one roster's
+      Telegram group chat.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - roster_id
+              - chat_member_id
+    columns:
+      - name: roster_id
+        data_type: string
+        description: Identifier of the roster associated with the Telegram chat.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_fs_rosters')
+                field: roster_id
+
+      - name: chat_member_id
+        data_type: string
+        description: Identifier of the member included in the roster's Telegram chat.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_fs_members_patched')
+                field: member_id
+
+  # ============================================================
+  # ROSTER DATETIME INTERMEDIATE MODELS
+  # ============================================================
+  - name: int_roster_service_datetimes
+    description: >
+      Intermediate view that expands and types the service date-time JSON array
+      from stg_fs_rosters. One row represents one service period within one
+      roster.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - roster_id
+              - service_offset
+    columns:
+      - name: roster_id
+        data_type: string
+        description: Identifier of the roster containing the service period.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_fs_rosters')
+                field: roster_id
+
+      - name: service_offset
+        data_type: int64
+        description: Zero-based position of the service period in the source array.
+        data_tests:
+          - not_null
+
+      - name: service_date
+        data_type: date
+        description: Calendar date of the service period.
+        data_tests:
+          - not_null
+
+      - name: service_start_time
+        data_type: time
+        description: Start time of the service period.
+        data_tests:
+          - not_null
+
+      - name: service_end_time
+        data_type: time
+        description: End time of the service period.
+        data_tests:
+          - not_null
+
+      - name: service_start_at
+        data_type: datetime
+        description: Combined start date and time of the service period.
+        data_tests:
+          - not_null
+
+      - name: service_end_at
+        data_type: datetime
+        description: Combined end date and time of the service period.
+        data_tests:
+          - not_null
+
+  - name: int_roster_rehearsal_datetimes
+    description: >
+      Intermediate view that expands and types the rehearsal date-time JSON
+      array from stg_fs_rosters. One row represents one rehearsal period within
+      one roster.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - roster_id
+              - rehearsal_offset
+    columns:
+      - name: roster_id
+        data_type: string
+        description: Identifier of the roster containing the rehearsal period.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_fs_rosters')
+                field: roster_id
+
+      - name: rehearsal_offset
+        data_type: int64
+        description: Zero-based position of the rehearsal period in the source array.
+        data_tests:
+          - not_null
+
+      - name: rehearsal_date
+        data_type: date
+        description: Calendar date of the rehearsal period.
+        data_tests:
+          - not_null
+
+      - name: rehearsal_start_time
+        data_type: time
+        description: Start time of the rehearsal period.
+        data_tests:
+          - not_null
+
+      - name: rehearsal_end_time
+        data_type: time
+        description: End time of the rehearsal period.
+        data_tests:
+          - not_null
+
+      - name: rehearsal_start_at
+        data_type: datetime
+        description: Combined start date and time of the rehearsal period.
+        data_tests:
+          - not_null
+
+      - name: rehearsal_end_at
+        data_type: datetime
+        description: Combined end date and time of the rehearsal period.
+        data_tests:
+          - not_null
